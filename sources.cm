@@ -1,0 +1,14 @@
+Library
+
+  structure Var
+  structure Expression
+  structure Flatten
+
+is
+
+  $/smlnj-lib.cm
+
+  var.sml
+  exps.sml
+  flatten.sml
+
