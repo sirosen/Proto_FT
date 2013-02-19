@@ -1,5 +1,9 @@
-structure Exp =
-  struct
+structure Exp : sig
+
+  type exp
+  type const
+
+  end =struct
 
     type var = Var.var
 

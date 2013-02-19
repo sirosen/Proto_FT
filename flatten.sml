@@ -9,8 +9,9 @@ structure Flatten : sig
 
     type ty = Ty.ty
     type var = Var.var
-    type exp = Exp.exp
-    type const = Exp.const
+
+    datatype exp = datatype Exp.exp
+    datatype const = datatype Exp.const
 
     (* Shape tree. We can rethink this later. *)
     datatype Shape = Node of Shape list
@@ -21,7 +22,6 @@ structure Flatten : sig
     datatype NFArray = NFA_Tup of NFArray * NFArray
                      | NFA_Arr of NFArray array
                      | NFA_Lf of FArray
-
 
     fun mkFlatExp e =
       case e
