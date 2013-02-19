@@ -1,13 +1,15 @@
 Library
 
+  structure Ty
   structure Var
-  structure Expression
+  structure Exp
   structure Flatten
 
 is
 
   $/smlnj-lib.cm
 
+  proto-ty.sml
   var.sml
   exps.sml
   flatten.sml

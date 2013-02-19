@@ -1,13 +1,16 @@
-structure Expression : sig
-    type exp
+structure Exp =
+  struct
 
-    end = struct
+    type var = Var.var
 
-      type var = Var.var
+    datatype exp = E_Let of (var * exp * exp)
+                 | E_Apply of (var * exp)
+                 | E_Const of const
 
-      datatype exp = Let of (var * exp)
-                   | Case of (var * (exp * exp) list)
-                   | Apply of (var * exp)
-                   | Const of var
+    and const = ARR of const array
+              | FUN of var list -> exp
+              | TUP of const * const 
+              | INT of int
+              | UNIT
 
-    end
+  end
