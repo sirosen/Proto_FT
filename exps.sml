@@ -17,18 +17,20 @@ structure Exp : sig
                  | E_Const of const
 
     and const = ARR of const list
+              | FArrayConst of FArray
+              | NFArrayConst of NFArray
               | FUN of var list -> exp
               | TUP of const * const 
               | INT of int
               | UNIT
 
     (* Shape tree. We can rethink this later. *)
-    datatype Shape = Node of Shape list
+    and Shape = Node of Shape list
                    | Lf of int * int
 
-    datatype FArray = FArray of const list * Shape
+    and FArray = FArray of const list * Shape
 
-    datatype NFArray = NFA_Tup of NFArray * NFArray
+    and NFArray = NFA_Tup of NFArray * NFArray
                      | NFA_Arr of NFArray list
                      | NFA_Lf of FArray
 
