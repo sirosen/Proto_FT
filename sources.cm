@@ -8,8 +8,9 @@ Library
 is
 
   $/smlnj-lib.cm
+  utils.sml
 
-  proto-ty.sml
+  ty.sml
   var.sml
   exps.sml
   flatten.sml
