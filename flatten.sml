@@ -15,7 +15,7 @@ structure Flatten : sig
      * in order to be able to make empty arrays with correct
      * tuple arity. *)
     fun constToNFA (c,t) = let
-        fun unzipConstList (cs : const list) = let
+        fun unzipConstList (cs : const list) : (const list * const list) = let
             fun breakTup c =
               case c
                 of TUP(a,b) => (a,b)
@@ -29,7 +29,7 @@ structure Flatten : sig
         case c
           of ARR(cs) =>
                (case t
-                  of ARR_TY(_) => arrToNFA(cs,t)
+                  of ARR_TY(t') => arrToNFA(cs,t')
                    | TUP_TY(tp,tq) =>
                      let
                        val (ps,qs) = unzipConstList cs
