@@ -35,6 +35,7 @@ structure Exp = struct
     (* flattened op *)
     datatype fop = F_ARR_SUB of int list
                  | F_TUP_SUB of int
+                 | F_OP_COMP of fop * fop
     (* flattened term *)
     and fterm = F_GROUND of ground_term
               | F_ARR of farray
