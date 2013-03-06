@@ -1,7 +1,6 @@
 Library
 
   structure Ty
-  structure Var
   structure Exp
   structure Flatten
 
@@ -11,6 +10,5 @@ is
   utils.sml
 
   ty.sml
-  var.sml
   exps.sml
   flatten.sml

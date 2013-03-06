@@ -1,50 +1,30 @@
 structure Flatten : sig
 
-  val flattenConst : Exp.const * Ty.ty -> Exp.const
+  val termToNFTerm : Exp.term -> Exp.nfterm
+  val opToNFOp : Exp.basic_op -> Exp.nfop
+
+  val nftermToFTerm : Exp.nfterm -> Exp.fterm
+  val nfopToFOp : Exp.nfop -> Exp.fop
 
   end = struct
 
-    datatype ty = datatype Ty.ty
-    datatype const = datatype Exp.const
 
-    datatype NFArray = datatype Exp.NFArray
-    datatype Shape = datatype Exp.Shape
-    datatype FArray = datatype Exp.FArray
+    datatype basic_op = datatype Exp.basic_op
+    datatype nfop = datatype Exp.nfop
+    datatype fop = datatype Exp.fop
 
-    (* constToNFA must have the typing information for the NFA
-     * in order to be able to make empty arrays with correct
-     * tuple arity. *)
-    fun constToNFA (c,t) = let
-        fun unzipConstList (cs : const list) : (const list * const list) = let
-            fun breakTup c =
-              case c
-                of TUP(a,b) => (a,b)
-                 | _ => raise Fail "Expected tuple! Type mismatch!"
-          in
-            Utils.unzip (map breakTup cs)
-          end
-        fun arrToNFA (cs : const list, t : ty) =
-             NFA_Arr (map constToNFA (map (fn x => (x,t)) cs))
-      in
-        case c
-          of ARR(cs) =>
-               (case t
-                  of ARR_TY(t') => arrToNFA(cs,t')
-                   | TUP_TY(tp,tq) =>
-                     let
-                       val (ps,qs) = unzipConstList cs
-                     in
-                       NFA_Tup (constToNFA (ARR(ps),ARR_TY(tp)),
-                                constToNFA (ARR(qs),ARR_TY(tq)))
-                     end
-                   | _ => NFA_Lf(FArray(cs,Lf(0,length cs)))
-               (*end case*))
-           | _ => raise Fail "Trying to make a non-array constant into an NFA."
-      end
+    datatype term = datatype Exp.term
+    datatype nfterm = datatype Exp.nfterm
+    datatype fterm = datatype Exp.fterm
+    datatype gterm = datatype Exp.ground_term
 
-    fun flattenConst (c,t) =
-      case t
-        of ARR_TY(t') => NFArrayConst(constToNFA (c,t'))
-         | _ => c
+    datatype shape = datatype Exp.shape
+    datatype farray = datatype Exp.farray
+    datatype nfarray = datatype Exp.nfarray
+
+    fun termToNFTerm t = raise Fail "todo"
+    fun nftermToFTerm t = raise Fail "todo"
+    fun opToNFOp b_op = raise Fail "todo"
+    fun nfopToFOp nf_op = raise Fail "todo"
 
   end

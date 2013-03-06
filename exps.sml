@@ -9,18 +9,18 @@ structure Exp = struct
     and farray = FArray of int list * shape
 
     (* nested flat array *)
-    datatype nfarray = NFA_Tup of NFArray * NFArray
-                     | NFA_Arr of NFArray list
+    datatype nfarray = NFA_Tup of nfarray * nfarray
+                     | NFA_Arr of nfarray list
                      | NFA_Lf of farray
 
 
-    datatype op = ARR_SUB of int
+    datatype basic_op = ARR_SUB of int
                 | TUP_SUB of int
-                | OP_COMP of op * op
+                | OP_COMP of basic_op * basic_op
     and term = GROUND of ground_term
              | ARR of term list
              | TUP of term * term
-             | APPLY_SUB of op * term
+             | APPLY_SUB of basic_op * term
 
 
     (* nested flat op *)
