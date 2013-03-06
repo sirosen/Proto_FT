@@ -43,10 +43,4 @@ structure Exp = struct
               | F_APPLY_SUB of fop * fterm
 
 
-(*
-    val varTbl = Var.IDTbl.mkTable (1024, Fail "Unbound variable!") : exp Var.IDTbl.hash_table
-
-    fun bindToVar (v,e) = Var.IDTbl.insert varTbl (v,e)
-*)
-
   end
