@@ -22,9 +22,6 @@ structure Flatten : sig
     datatype farray = datatype Exp.farray
     datatype nfarray = datatype Exp.nfarray
 
-    fun termToNFTerm t = raise Fail "todo"
-    fun nftermToFTerm t = raise Fail "todo"
-
     fun subToNFSub s = let
       fun getNFArrSub (nfs as NF_ARR_SUB(ns,ms)) = ns
       fun getNFTupSub (nfs as NF_ARR_SUB(ns,ms)) = ms
@@ -44,6 +41,38 @@ structure Flatten : sig
                                            subToNFSub s2)
       end
 
-    fun nfsubToFSub nfs = raise Fail "todo"
+    fun nfsubToFSub (nfs as NF_ARR_SUB(ps,qs)) = let
+      fun interSub (ns, ms) : fsub list =
+        case (ns,ms)
+          of ([],[]) => []
+           | ([],m::ms') => F_TUP_SUB(m)::interSub([],ms')
+           | (n::ns',[]) => [F_ARR_SUB(ns)]
+           (* Tuples are on the outside, so they have
+            * higher precedence than arrays *)
+           | (n::ns',m::ms') => F_TUP_SUB(m)::interSub(ns',ms)
+      val subs = interSub(ps,qs)
+      in
+        case subs
+          of [] => raise Fail "Empty sub operator in NFSub -> FSub"
+           | s::ss => foldl (fn (a,b) => F_OP_COMP(a,b)) s ss
+      end
+
+    fun termToNFTerm t =
+      case t
+        of GROUND(g) => NF_GROUND(g)
+         | ARR(ts) => raise Fail "todo"
+         | TUP(t1,t2) => NF_TUP(termToNFTerm t1, termToNFTerm t2)
+         | APPLY_SUB(s,t') => NF_APPLY_SUB(subToNFSub s,
+                                           termToNFTerm t')
+
+    fun nftermToFTerm t =
+      case t
+        of NF_GROUND(g) => F_GROUND(g)
+         | NF_ARR(ns) => raise Fail "todo"
+         | NF_TUP(t1,t2) => F_TUP(nftermToFTerm t1,
+                                  nftermToFTerm t2)
+         | NF_APPLY_SUB(s,t') => F_APPLY_SUB(nfsubToFSub s,
+                                             nftermToFTerm t')
+
 
   end
