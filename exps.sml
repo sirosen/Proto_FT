@@ -7,6 +7,7 @@ structure Exp = struct
                    | Lf of int * int
 
     and farray = FArray of int list * shape
+               | FArray_Tup of farray * farray
 
     (* nested flat array *)
     datatype nfarray = NFA_Tup of nfarray * nfarray
@@ -25,6 +26,7 @@ structure Exp = struct
 
     (* nested flat sub op *)
     datatype nfsub = NF_ARR_SUB of int list * int list
+                   | NF_TUP_SUB of int
     (* nested flat term *)
     and nfterm = NF_GROUND of ground_term
                | NF_ARR of nfarray
