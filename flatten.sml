@@ -28,7 +28,7 @@ structure Flatten : sig
       (* It is important that we concat with nfs2 first,
        * and nfs1 second, so that we apply operations by
        * walking down the lists *)
-      fun nfSubMerge (nfs1,nfs2) =
+      fun nfsMerge (nfs1,nfs2) =
         NF_ARR_SUB(
             (getNFArrSub nfs2) @ (getNFArrSub nfs1),
             (getNFTupSub nfs2) @ (getNFTupSub nfs1)
@@ -37,19 +37,18 @@ structure Flatten : sig
         case s
           of ARR_SUB(n) => NF_ARR_SUB([n],[])
            | TUP_SUB(n) => NF_ARR_SUB([],[n])
-           | OP_COMP(s1,s2) => nfSubMerge (subToNFSub s1,
-                                           subToNFSub s2)
+           | OP_COMP(s1,s2) => nfsMerge (subToNFSub s1,
+                                         subToNFSub s2)
       end
 
-    fun nfsubToFSub (nfs as NF_ARR_SUB(ps,qs)) = let
-      fun interSub (ns, ms) : fsub list =
-        case (ns,ms)
-          of ([],[]) => []
-           | ([],m::ms') => F_TUP_SUB(m)::interSub([],ms')
-           | (n::ns',[]) => [F_ARR_SUB(ns)]
+    fun nfsubToFSub (nfs as NF_TUP_SUB(n)) = F_TUP_SUB(n)
+      | nfsubToFSub (nfs as NF_ARR_SUB(ps,qs)) = let
+      fun interSub ([] : int list, [] : int list) : fsub list = []
+        | interSub ([],m::ms) => F_TUP_SUB(m)::interSub([],ms)
+        | interSub (n::ns,[]) => [F_ARR_SUB(n::ns)]
            (* Tuples are on the outside, so they have
             * higher precedence than arrays *)
-           | (n::ns',m::ms') => F_TUP_SUB(m)::interSub(ns',ms)
+        | interSub (n::ns,m::ms) => F_TUP_SUB(m)::interSub(n::ns,ms)
       val subs = interSub(ps,qs)
       in
         case subs
