@@ -24,7 +24,13 @@ structure Flatten : sig
 
     fun subToNFSub s = let
       fun getNFArrSub (nfs as NF_ARR_SUB(ns,ms)) = ns
+        | getNFArrSub (nfs as NF_TUP_SUB(_)) = []
+        | getNFArrSub (nfs as NF_SUB_COMP(a,b)) =
+            getNFArrSub(b) @ getNFArrSub(a)
       fun getNFTupSub (nfs as NF_ARR_SUB(ns,ms)) = ms
+        | getNFTupSub (nfs as NF_TUP_SUB(n)) = [n]
+        | getNFTupSub (nfs as NF_SUB_COMP(a,b)) =
+            getNFTupSub(b) @ getNFTupSub(a)
       (* It is important that we concat with nfs2 first,
        * and nfs1 second, so that we apply operations by
        * walking down the lists *)
@@ -33,28 +39,37 @@ structure Flatten : sig
             (getNFArrSub nfs2) @ (getNFArrSub nfs1),
             (getNFTupSub nfs2) @ (getNFTupSub nfs1)
             )
+      fun hasArrSub (s as ARR_SUB(_)) = true
+        | hasArrSub (s as TUP_SUB(_)) = false
+        | hasArrSub (s as SUB_COMP(a,b)) = hasArrSub a orelse
+                                           hasArrSub b
       in
         case s
           of ARR_SUB(n) => NF_ARR_SUB([n],[])
-           | TUP_SUB(n) => NF_ARR_SUB([],[n])
-           | OP_COMP(s1,s2) => nfsMerge (subToNFSub s1,
-                                         subToNFSub s2)
+           | TUP_SUB(n) => NF_TUP_SUB(n)
+           | SUB_COMP(s1,s2) =>
+               if hasArrSub s2 then nfsMerge (subToNFSub s1,
+                                              subToNFSub s2)
+               else NF_SUB_COMP(subToNFSub(s1),
+                                subToNFSub(s2))
       end
 
     fun nfsubToFSub (nfs as NF_TUP_SUB(n)) = F_TUP_SUB(n)
+      | nfsubToFSub (nfs as NF_SUB_COMP(a,b)) =
+          F_SUB_COMP(nfsubToFSub a, nfsubToFSub b)
       | nfsubToFSub (nfs as NF_ARR_SUB(ps,qs)) = let
-      fun interSub ([] : int list, [] : int list) : fsub list = []
-        | interSub ([],m::ms) => F_TUP_SUB(m)::interSub([],ms)
-        | interSub (n::ns,[]) => [F_ARR_SUB(n::ns)]
-           (* Tuples are on the outside, so they have
-            * higher precedence than arrays *)
-        | interSub (n::ns,m::ms) => F_TUP_SUB(m)::interSub(n::ns,ms)
-      val subs = interSub(ps,qs)
-      in
-        case subs
-          of [] => raise Fail "Empty sub operator in NFSub -> FSub"
-           | s::ss => foldl (fn (a,b) => F_OP_COMP(a,b)) s ss
-      end
+          fun interSub ([] : int list, [] : int list) : fsub list = []
+            | interSub ([],m::ms) = F_TUP_SUB(m)::interSub([],ms)
+            | interSub (n::ns,[]) = [F_ARR_SUB(n::ns)]
+               (* Tuples are on the outside, so they have
+                * higher precedence than arrays *)
+            | interSub (n::ns,m::ms) = F_TUP_SUB(m)::interSub(n::ns,ms)
+          val subs = interSub(ps,qs)
+          in
+            case subs
+              of [] => raise Fail "Empty sub operator in NFSub -> FSub"
+               | s::ss => foldl (fn (a,b) => F_SUB_COMP(a,b)) s ss
+          end
 
     fun termToNFTerm t =
       case t
