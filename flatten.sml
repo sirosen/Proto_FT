@@ -33,25 +33,50 @@ structure Flatten : sig
             getNFTupSub(b) @ getNFTupSub(a)
       (* It is important that we concat with nfs2 first,
        * and nfs1 second, so that we apply operations by
-       * walking down the lists *)
+       * walking down the lists.
+       * Remember that if we write h = (f o g) then h applies
+       * g first, then f; i.e. read R to L. *)
       fun nfsMerge (nfs1,nfs2) =
         NF_ARR_SUB(
             (getNFArrSub nfs2) @ (getNFArrSub nfs1),
             (getNFTupSub nfs2) @ (getNFTupSub nfs1)
             )
+      (* Correctness here becomes non-obvious, so a short explanation:
+       * Any operator that looks like TUP o ARR is actually an
+       * array subscript, because we index into an array before indexing
+       * into tuples.
+       * What about TUP o ARR o TUP? We want to catch these cases, which
+       * SUB_COMP nodes might not handle gracefully. *)
       fun hasArrSub (s as ARR_SUB(_)) = true
         | hasArrSub (s as TUP_SUB(_)) = false
         | hasArrSub (s as SUB_COMP(a,b)) = hasArrSub a orelse
                                            hasArrSub b
+      fun hasNFArrSub (s as NF_ARR_SUB(_)) = true
+        | hasNFArrSub (s as NF_TUP_SUB(_)) = false
+        | hasNFArrSub (s as NF_SUB_COMP(a,b)) = hasNFArrSub a orelse
+                                                hasNFArrSub b
       in
         case s
           of ARR_SUB(n) => NF_ARR_SUB([n],[])
            | TUP_SUB(n) => NF_TUP_SUB(n)
            | SUB_COMP(s1,s2) =>
-               if hasArrSub s2 then nfsMerge (subToNFSub s1,
-                                              subToNFSub s2)
-               else NF_SUB_COMP(subToNFSub(s1),
-                                subToNFSub(s2))
+               let
+                 val nfs1 = subToNFSub s1
+                 val nfs2 = subToNFSub s2
+               in
+                 case nfs2
+                   of NF_ARR_SUB(ns,ms) =>
+                        nfsMerge (nfs1, NF_ARR_SUB(ns,ms))
+                    | NF_TUP_SUB(n) =>
+                        NF_SUB_COMP(nfs1, NF_TUP_SUB(n))
+                    | NF_SUB_COMP(a,b) =>
+                        if hasNFArrSub b then
+                          nfsMerge (nfs1, nfs2)
+                        else if hasNFArrSub a then
+                          NF_SUB_COMP(nfsMerge (nfs1,a), b)
+                        else
+                          NF_SUB_COMP(nfs1,nfs2)
+               end
       end
 
     fun nfsubToFSub (nfs as NF_TUP_SUB(n)) = F_TUP_SUB(n)
