@@ -6,7 +6,7 @@ structure Exp = struct
     datatype shape = Node of shape list
                    | Lf of int * int
 
-    and farray = FArray of int list * shape
+    and farray = FArray of ground_term list * shape
                | FArray_Tup of farray * farray
 
     (* nested flat array *)

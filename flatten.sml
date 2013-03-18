@@ -105,13 +105,21 @@ structure Flatten : sig
                                            termToNFTerm t')
 
     fun nftermToFTerm t =
-      case t
-        of NF_GROUND(g) => F_GROUND(g)
-         | NF_ARR(ns) => raise Fail "todo"
-         | NF_TUP(t1,t2) => F_TUP(nftermToFTerm t1,
-                                  nftermToFTerm t2)
-         | NF_APPLY_SUB(s,t') => F_APPLY_SUB(nfsubToFSub s,
-                                             nftermToFTerm t')
+      let
+        fun flattenNFA (NFA_Tup(ns,ms)) = FArray_Tup(flattenNFA ns,
+                                                   flattenNFA ms)
+          | flattenNFA (NFA_Arr(nss)) = raise Fail
+              "Insufficiently flattened array in NFA->FA"
+          | flattenNFA (NFA_Lf(fa)) = fa
+      in
+        case t
+          of NF_GROUND(g) => F_GROUND(g)
+           | NF_ARR(ns) => F_ARR(flattenNFA ns)
+           | NF_TUP(t1,t2) => F_TUP(nftermToFTerm t1,
+                                    nftermToFTerm t2)
+           | NF_APPLY_SUB(s,t') => F_APPLY_SUB(nfsubToFSub s,
+                                               nftermToFTerm t')
+      end
 
 
   end
