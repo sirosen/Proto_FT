@@ -1,6 +1,6 @@
 structure Flatten : sig
 
-  val termToNFTerm : Exp.term -> Exp.nfterm
+  val termToNFTerm : Exp.term * Ty.ty -> Exp.nfterm
   val subToNFSub : Exp.sub -> Exp.nfsub
 
   val nftermToFTerm : Exp.nfterm -> Exp.fterm
@@ -8,6 +8,8 @@ structure Flatten : sig
 
   end = struct
 
+    datatype ty = datatype Ty.ty
+    datatype ground_ty = datatype Ty.ground_ty
 
     datatype sub = datatype Exp.sub
     datatype nfsub = datatype Exp.nfsub
@@ -96,13 +98,15 @@ structure Flatten : sig
                | s::ss => foldl (fn (a,b) => F_SUB_COMP(a,b)) s ss
           end
 
-    fun termToNFTerm t =
-      case t
-        of GROUND(g) => NF_GROUND(g)
-         | ARR(ts) => raise Fail "todo"
-         | TUP(t1,t2) => NF_TUP(termToNFTerm t1, termToNFTerm t2)
-         | APPLY_SUB(s,t') => NF_APPLY_SUB(subToNFSub s,
-                                           termToNFTerm t')
+    fun termToNFTerm (t,ty) =
+      case (t,ty)
+        of (GROUND(g),_) => NF_GROUND(g)
+         | (ARR(ts),ARR_TY(ty')) => raise Fail "todo"
+         | (TUP(t1,t2),TUP_TY(ty1,ty2)) =>
+             NF_TUP(termToNFTerm (t1,ty1), termToNFTerm (t2,ty2))
+         | (APPLY_SUB(s,t'),ty) => NF_APPLY_SUB(subToNFSub s,
+                                                termToNFTerm (t',ty))
+         | _ => raise Fail "Type mismatch in SourceTerm->NFTerm"
 
     fun nftermToFTerm t =
       let
