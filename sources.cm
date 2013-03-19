@@ -2,6 +2,7 @@ Library
 
   structure Ty
   structure Exp
+  structure FlattenOps
   structure Flatten
 
 is
@@ -11,4 +12,5 @@ is
 
   ty.sml
   exps.sml
+  flatten-ops.sml
   flatten.sml
