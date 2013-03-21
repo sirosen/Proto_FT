@@ -27,8 +27,6 @@ structure Flatten : sig
          | (ARR(ts),ARR_TY(ty')) => raise Fail "todo"
          | (TUP(t1,t2),TUP_TY(ty1,ty2)) =>
              NF_TUP(termToNFTerm (t1,ty1), termToNFTerm (t2,ty2))
-         | (APPLY_SUB(s,t'),ty) => NF_APPLY_SUB(FOps.subToNFSub s,
-                                                termToNFTerm (t',ty))
          | _ => raise Fail "Type mismatch in SourceTerm->NFTerm"
 
     fun nftermToFTerm t =
@@ -44,8 +42,6 @@ structure Flatten : sig
            | NF_ARR(ns) => F_ARR(flattenNFA ns)
            | NF_TUP(t1,t2) => F_TUP(nftermToFTerm t1,
                                     nftermToFTerm t2)
-           | NF_APPLY_SUB(s,t') => F_APPLY_SUB(FOps.nfsubToFSub s,
-                                               nftermToFTerm t')
       end
 
 

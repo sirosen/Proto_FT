@@ -21,7 +21,6 @@ structure Exp = struct
     and term = GROUND of ground_term
              | ARR of term list
              | TUP of term * term
-             | APPLY_SUB of sub * term
 
 
     (* nested flat sub op *)
@@ -32,7 +31,6 @@ structure Exp = struct
     and nfterm = NF_GROUND of ground_term
                | NF_ARR of nfarray
                | NF_TUP of nfterm * nfterm
-               | NF_APPLY_SUB of nfsub * nfterm
 
     (* flattened sub op *)
     datatype fsub = F_ARR_SUB of int list
@@ -42,7 +40,6 @@ structure Exp = struct
     and fterm = F_GROUND of ground_term
               | F_ARR of farray
               | F_TUP of fterm * fterm
-              | F_APPLY_SUB of fsub * fterm
 
 
   end
