@@ -1,8 +1,8 @@
 structure Flatten : sig
 
-  val termToNFTerm : Exp.term * Ty.ty -> Exp.nfterm
+  val termToNFTerm : Exp.term * Ty.ty -> Exp.nfterm * Ty.ty
 
-  val nftermToFTerm : Exp.nfterm -> Exp.fterm
+  val nftermToFTerm : Exp.nfterm * Ty.ty -> Exp.fterm * Ty.ty
 
   end = struct
 
@@ -53,13 +53,17 @@ structure Flatten : sig
 
     fun termToNFTerm (t,ty) =
       case (t,ty)
-        of (GROUND(g),GROUND_TY(_)) => NF_GROUND(g)
-         | (ARR(ts),ARR_TY(ty')) => NF_ARR(arrToNFArr ty' ts)
-         | (TUP(t1,t2),TUP_TY(ty1,ty2)) =>
-             NF_TUP(termToNFTerm (t1,ty1), termToNFTerm (t2,ty2))
+        of (GROUND(g),GROUND_TY(_)) => (NF_GROUND(g),ty)
+         | (ARR(ts),ARR_TY(ty')) => (NF_ARR(arrToNFArr ty' ts),ty)
+         | (TUP(t1,t2),TUP_TY(ty1,ty2)) => let
+             val (t1',ty1') = termToNFTerm (t1,ty1)
+             val (t2',ty2') = termToNFTerm (t2,ty2)
+             in
+               (NF_TUP(t1',t2'),TUP_TY(ty1',ty2'))
+             end
          | _ => raise Fail "Type mismatch in SourceTerm->NFTerm"
 
-    fun nftermToFTerm t =
+    fun nftermToFTerm (t,ty) =
       let
         fun flattenNFA (NFA_Tup(ns,ms)) = FArray_Tup(flattenNFA ns,
                                                      flattenNFA ms)
@@ -67,11 +71,16 @@ structure Flatten : sig
               "Insufficiently flattened array in NFA->FA"
           | flattenNFA (NFA_Lf(fa)) = fa
       in
-        case t
-          of NF_GROUND(g) => F_GROUND(g)
-           | NF_ARR(ns) => F_ARR(flattenNFA ns)
-           | NF_TUP(t1,t2) => F_TUP(nftermToFTerm t1,
-                                    nftermToFTerm t2)
+        case (t,ty)
+          of (NF_GROUND(g),GROUND_TY(_)) => (F_GROUND(g),ty)
+           | (NF_ARR(ns),ARR_TY(ty')) => (F_ARR(flattenNFA ns),ty)
+           | (NF_TUP(t1,t2),TUP_TY(ty1,ty2)) => let
+               val (t1',ty1') = nftermToFTerm (t1,ty1)
+               val (t2',ty2') = nftermToFTerm (t2,ty2)
+               in
+                 (F_TUP(t1',t2'),TUP_TY(ty1',ty2'))
+               end
+           | _ => raise Fail "Type mismatch in NFTerm->FTerm"
       end
 
 
