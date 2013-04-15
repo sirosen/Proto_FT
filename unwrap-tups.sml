@@ -22,9 +22,21 @@ structure UnwrapTups : sig
 
 
     (* Assumes that the type has been unwrapped *)
-    fun getIndexer ty = raise Fail "todo"
+    fun getIndexer ty =
+      case ty
+        of TUP_TY(a,b) =>
+           let
+             val indA = map (fn ns => 1::ns) (getIndexer a)
+             val indB = map (fn ns => 2::ns) (getIndexer b)
+           in
+             indA @ indB
+           end
+         | _ => []
 
-    fun applyIndexer ind target = raise Fail "todo"
+    fun applyIndexer ind target =
+      case ind
+        of [] => target
+         | _ => raise Fail "todo"
 
     fun unwrap ((ns,ty) as (NFA_Lf(_),ARR_TY(_))) = (ns,ty)
       | unwrap (NFA_TUP(ps,qs),TUP_TY(tp,tq)) =
